@@ -16,12 +16,15 @@ options.addArguments('--disable-gpu');
 options.addArguments('--window-size=1280,960');
 options.addArguments('--no-sandbox');
 
-const driver = new webdriver.Builder()
+	
+const httpserver = http.createServer((req, res) => {
+	
+	const driver = new webdriver.Builder()
     .forBrowser('chrome')
     .setChromeOptions(options)
     .build();
 	
-const httpserver = http.createServer((req, res) => {
+	
 	const query = url.parse(req.url,true).query;
 	res.writeHead(200, { 'content-type': 'application/json' })
 	let data = {"error": false, "message": {"name": null, "remoteStacktrace": null}}
@@ -75,7 +78,7 @@ const httpserver = http.createServer((req, res) => {
 					data["imagedata"] = imagedata;
 					res.write(JSON.stringify(data));
 					res.end();
-					//driver.quit();
+					driver.quit();
 				}).catch((err) => {
 				data["error"] = true;
 				data["message"] = err;
@@ -83,7 +86,7 @@ const httpserver = http.createServer((req, res) => {
 				data["url"] = query.url;
 				res.write(JSON.stringify(data));
 				res.end();
-				//driver.quit();
+					driver.quit();
 			});
 			}).catch((err) => {
 				data["error"] = true;
@@ -92,7 +95,7 @@ const httpserver = http.createServer((req, res) => {
 				data["url"] = query.url;
 				res.write(JSON.stringify(data));
 				res.end();
-				//driver.quit();
+					driver.quit();
 			});
 		}).catch((err) => {
 			data["error"] = true;
@@ -101,7 +104,7 @@ const httpserver = http.createServer((req, res) => {
 			data["url"] = query.url;
 			res.write(JSON.stringify(data));
 			res.end();
-			//driver.quit();
+					driver.quit();
 		});
 	}).catch((err) => {
 		data["error"] = true;
