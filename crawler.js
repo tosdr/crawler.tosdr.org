@@ -37,6 +37,9 @@ const httpserver = http.createServer((req, res) => {
 		res.end();
 		return;
 	}
+	if(query.xpath === ""){
+		query.xpath = "//body";
+	}
 	if(query.apikey !== process.env.API_KEY){
 		data["error"] = true;
 		data["message"] = {
