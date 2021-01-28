@@ -36,6 +36,7 @@ const httpserver = http.createServer((req, res) => {
 		};
 		data["xpath"] = query.xpath;
 		data["url"] = query.url;
+		driver.close();
 		res.write(JSON.stringify(data));
 		res.end();
 		return;
@@ -51,6 +52,7 @@ const httpserver = http.createServer((req, res) => {
 		};
 		data["xpath"] = query.xpath;
 		data["url"] = query.url;
+		driver.close();
 		res.write(JSON.stringify(data));
 		res.end();
 		return;
@@ -64,6 +66,7 @@ const httpserver = http.createServer((req, res) => {
 		};
 		data["xpath"] = query.xpath;
 		data["url"] = query.url;
+		driver.close();
 		res.write(JSON.stringify(data));
 		res.end();
 		return;
@@ -75,38 +78,40 @@ const httpserver = http.createServer((req, res) => {
 				data["xpath"] = query.xpath;
 				data["url"] = query.url;
 				driver.takeScreenshot().then((imagedata) => {
+					driver.close();
 					data["imagedata"] = imagedata;
 					res.write(JSON.stringify(data));
 					res.end();
-					driver.quit();
+					
 				}).catch((err) => {
+				driver.close();
 				data["error"] = true;
 				data["message"] = err;
 				data["xpath"] = query.xpath;
 				data["url"] = query.url;
 				res.write(JSON.stringify(data));
 				res.end();
-					driver.quit();
 			});
 			}).catch((err) => {
+				driver.close();
 				data["error"] = true;
 				data["message"] = err;
 				data["xpath"] = query.xpath;
 				data["url"] = query.url;
 				res.write(JSON.stringify(data));
 				res.end();
-					driver.quit();
 			});
 		}).catch((err) => {
+			driver.close();
 			data["error"] = true;
 			data["message"] = err;
 			data["xpath"] = query.xpath;
 			data["url"] = query.url;
 			res.write(JSON.stringify(data));
 			res.end();
-					driver.quit();
 		});
 	}).catch((err) => {
+		driver.close();
 		data["error"] = true;
 		data["message"] = err;
 		
