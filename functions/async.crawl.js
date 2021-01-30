@@ -53,7 +53,7 @@ module.exports = async function crawl(_url, _xpath) {
                 await driver.wait(webdriver.until.elementLocated(webdriver.By.xpath(_xpath)), 10000);
                 let element = await driver.findElement(webdriver.By.xpath(_xpath));
                 let html = await element.getAttribute('innerHTML');
-                await driver.executeScript("arguments[0].style.border='2px solid red'; return true", element);
+                await driver.executeScript("arguments[0].scrollIntoView(true); arguments[0].style.border='2px solid red'; return true", element);
                 let imagedata = await driver.takeScreenshot();
 
                 let cdn = await uploadjbcdn(imagedata);
