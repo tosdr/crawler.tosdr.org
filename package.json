@@ -13,6 +13,9 @@
     "chromedriver": "^88.0.0",
     "chromium": "^3.0.2",
     "dotenv": "^8.2.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "robots-parser": "^2.1.1",
     "selenium-webdriver": "^4.0.0-alpha.8"
   }
 }
