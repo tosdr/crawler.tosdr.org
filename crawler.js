@@ -1,44 +1,10 @@
-const fs = require('fs');
-const webdriver = require('selenium-webdriver');
-const chrome = require('selenium-webdriver/chrome');
-const chromium = require('chromium');
 const http = require('http');
 const dotenv = require('dotenv');
 const color = require('chalk');
 const url = require('url');
-require('chromedriver');
+const functions = require('./functions/index');
 
 dotenv.config();
-let options = new chrome.Options();
-options.setChromeBinaryPath(chromium.path);
-options.addArguments('--headless');
-options.addArguments('--disable-gpu');
-options.addArguments('--window-size=1280,960');
-options.addArguments('--no-sandbox');
-options.addArguments('--lang=en');
-
-async function crawl(url, xpath) {
-
-    const driver = new webdriver.Builder()
-        .forBrowser('chrome')
-        .setChromeOptions(options)
-        .build();
-
-
-
-    await driver.get(url);
-    await driver.wait(webdriver.until.elementLocated(webdriver.By.xpath(xpath)));
-    let element = await driver.findElement(webdriver.By.xpath(xpath));
-    let html = await element.getAttribute('innerHTML');
-    let imagedata = await driver.takeScreenshot();
-
-    await driver.quit();
-
-
-    return new Promise(resolve => {
-        resolve({ "html": html, "imagedata": imagedata });
-    });
-}
 
 const httpserver = http.createServer((req, res) => {
 
@@ -46,14 +12,7 @@ const httpserver = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'application/json' })
     let data = { "error": false, "message": { "name": null, "remoteStacktrace": null } }
     if (!query.apikey || !query.url || !query.xpath) {
-        data["error"] = true;
-        data["message"] = {
-            "name": "RequestArgumentErr",
-            "remoteStacktrace": "Required arguments missing"
-        };
-        data["xpath"] = query.xpath;
-        data["url"] = query.url;
-        res.write(JSON.stringify(data));
+        res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
         res.end();
         return;
     }
@@ -61,47 +20,22 @@ const httpserver = http.createServer((req, res) => {
         query.xpath = "//body";
     }
     if (query.apikey !== process.env.API_KEY) {
-        data["error"] = true;
-        data["message"] = {
-            "name": "RequestArgumentErr",
-            "remoteStacktrace": "Invalid API Key"
-        };
-        data["xpath"] = query.xpath;
-        data["url"] = query.url;
-        res.write(JSON.stringify(data));
+        res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Invalid API Key")));
         res.end();
         return;
     }
 
     if (req.method !== "GET") {
-        data["error"] = true;
-        data["message"] = {
-            "name": "RequestMethodErr",
-            "remoteStacktrace": "Only GET is supported"
-        };
-        data["xpath"] = query.xpath;
-        data["url"] = query.url;
-        res.write(JSON.stringify(data));
+        res.write(JSON.stringify(functions.response.error("RequestMethodErr", "Only GET is supported")));
         res.end();
         return;
     }
 
-    crawl(query.url, query.xpath).then((response) => {
-        data["raw_html"] = response.html;
-        data["xpath"] = query.xpath;
-        data["url"] = query.url;
-        data["imagedata"] = response.imagedata;
-        res.write(JSON.stringify(data));
+    functions.crawl(query.url, query.xpath).then((response) => {
+        res.write(JSON.stringify(functions.response.success(response)));
         res.end();
     }).catch((err) => {
-        data["error"] = true;
-        data["message"] = {
-            "name": err.name,
-            "remoteStacktrace": err.message
-        };
-        data["xpath"] = query.xpath;
-        data["url"] = query.url;
-        res.write(JSON.stringify(data));
+        res.write(JSON.stringify(functions.response.error(err.name, err.message)));
         res.end();
     });
 });
