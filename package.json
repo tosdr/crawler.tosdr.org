@@ -9,13 +9,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
     "chalk": "^4.1.0",
     "chromedriver": "^88.0.0",
     "chromium": "^3.0.2",
     "dotenv": "^8.2.0",
+    "form-data": "^3.0.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "robots-parser": "^2.1.1",
-    "selenium-webdriver": "^4.0.0-alpha.8"
+    "selenium-webdriver": "^4.0.0-alpha.8",
+    "uuid": "^8.3.2"
   }
 }

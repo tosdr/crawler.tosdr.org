@@ -5,6 +5,7 @@ const package = require('../package');
 const robotsParser = require('robots-parser');
 const url = require('url');
 const https = require('https');
+const uploadjbcdn = require('./async.upload_jbcdn');
 require('chromedriver');
 
 module.exports = async function crawl(_url, _xpath) {
@@ -54,10 +55,12 @@ module.exports = async function crawl(_url, _xpath) {
                 let html = await element.getAttribute('innerHTML');
                 let imagedata = await driver.takeScreenshot();
 
+                let cdn = await uploadjbcdn(imagedata);
+
                 await driver.quit();
 
 
-                resolve({ "raw_html": html, "imagedata": imagedata });
+                resolve({ "raw_html": html, "imagedata": imagedata, "imageurl": cdn.data.result.URL });
 
             });
 
