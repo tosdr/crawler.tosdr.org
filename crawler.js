@@ -11,15 +11,20 @@ const httpserver = http.createServer((req, res) => {
     const query = url.parse(req.url, true).query;
     res.writeHead(200, { 'content-type': 'application/json' })
     let data = { "error": false, "message": { "name": null, "remoteStacktrace": null } }
-    if (!query.apikey || !query.url || !query.xpath) {
+    if (!query.url) {
         res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
         res.end();
         return;
     }
-    if (query.xpath === "") {
+    if (!query.apikey && !functions.envIsEmpty("API_KEY")) {
+        res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
+        res.end();
+        return;
+    }
+    if (query.xpath === "" || typeof query.xpath === 'undefined') {
         query.xpath = "//body";
     }
-    if (query.apikey !== process.env.API_KEY) {
+    if (query.apikey !== process.env.API_KEY && !functions.envIsEmpty("API_KEY")) {
         res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Invalid API Key")));
         res.end();
         return;

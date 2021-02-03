@@ -6,6 +6,7 @@ const robotsParser = require('robots-parser');
 const url = require('url');
 const https = require('https');
 const uploadjbcdn = require('./async.upload_jbcdn');
+const envIsEmpty = require('./envIsEmpty');
 require('chromedriver');
 
 module.exports = async function crawl(_url, _xpath) {
@@ -27,7 +28,7 @@ module.exports = async function crawl(_url, _xpath) {
                 if (resp.statusCode == 200) {
                     var robots = robotsParser(`${parsedUrl.protocol}//${parsedUrl.hostname}/robots.txt`, data);
 
-                    if (robots.isDisallowed(_url, UserAgent)) {
+                    if (robots.isDisallowed(_url, UserAgent) && !process.env.IGNORE_ROBOTS) {
                         reject({ "name": "RobotsRestriction", "message": "Crawling forbidden due to robots.txt" });
                         return;
                     }
@@ -35,10 +36,10 @@ module.exports = async function crawl(_url, _xpath) {
 
                 let options = new chrome.Options();
                 options.setChromeBinaryPath(chromium.path);
+                options.addArguments('--no-sandbox');
                 options.addArguments('--headless');
                 options.addArguments('--disable-gpu');
                 options.addArguments('--window-size=1280,960');
-                options.addArguments('--no-sandbox');
                 options.addArguments('--lang=en');
                 options.addArguments(`--user-agent=${UserAgent}`);
 
@@ -55,13 +56,20 @@ module.exports = async function crawl(_url, _xpath) {
                 let html = await element.getAttribute('innerHTML');
                 await driver.executeScript("arguments[0].scrollIntoView(true); arguments[0].style.border='2px solid red'; return true", element);
                 let imagedata = await driver.takeScreenshot();
-
-                let cdn = await uploadjbcdn(imagedata);
+                let cdn = null;
+                if (!envIsEmpty("JBCDN_UPKEY") && !envIsEmpty("JBCDN_SLUG") && !envIsEmpty("JBCDN_TTL")) {
+                    let cdnResponse = await uploadjbcdn(imagedata);
+                    if (cdnResponse.error) {
+                        cdn = false;
+                    } else {
+                        cdn = cdnResponse.data.result.URL;
+                    }
+                }
 
                 await driver.quit();
 
 
-                resolve({ "raw_html": html, "imagedata": imagedata, "imageurl": cdn.data.result.URL });
+                resolve({ "raw_html": html, "imagedata": imagedata, "imageurl": cdn });
 
             });
 
