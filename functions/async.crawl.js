@@ -42,6 +42,9 @@ module.exports = async function crawl(_url, _xpath) {
                 options.addArguments('--window-size=1280,960');
                 options.addArguments('--lang=en');
                 options.addArguments(`--user-agent=${UserAgent}`);
+                options.addArguments("--disable-blink-features=AutomationControlled");
+                options.setUserPreferences({ 'useAutomationExtension': false });
+                options.setUserPreferences({ 'excludeSwitches': ["enable-automation"] });
 
                 const driver = new webdriver.Builder()
                     .forBrowser('chrome')
@@ -51,6 +54,7 @@ module.exports = async function crawl(_url, _xpath) {
                 try {
 
                     await driver.get(_url);
+                    await driver.sleep(5000);
                     await driver.wait(webdriver.until.elementLocated(webdriver.By.xpath(_xpath)), 10000);
                     let element = await driver.findElement(webdriver.By.xpath(_xpath));
                     let html = await element.getAttribute('innerHTML');
