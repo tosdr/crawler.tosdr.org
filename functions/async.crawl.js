@@ -81,6 +81,7 @@ module.exports = async function crawl(_url, _xpath) {
                                         return;
                                     }
 
+
                                     if (!item) {
                                         pdftxt.forEach(function (a, idx) {
                                             pdftxt[idx].forEach(function (v, i) {
@@ -91,11 +92,17 @@ module.exports = async function crawl(_url, _xpath) {
                                     } else if (item && item.page) {
                                         pg = item.page - 1;
                                         pdftxt[pg] = [];
+                                        pdftxt[pg]["width"] = item.page.width;
                                     } else if (item.text) {
                                         let t = 0;
                                         let sp = "";
                                         pdftxt[pg].forEach(function (val, idx) {
                                             if (val[1] == item.y) {
+                                                if (pdftxt[pg]["width"] && item.x - val[2] > pdftxt[pg]["width"]) {
+                                                    sp += " ";
+                                                } else {
+                                                    sp = "";
+                                                }
                                                 pdftxt[pg][idx][0] += sp + item.text;
                                                 t = 1;
                                             }
