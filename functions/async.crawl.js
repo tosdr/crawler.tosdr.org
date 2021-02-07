@@ -27,7 +27,7 @@ module.exports = async function crawl(_url, _xpath) {
             resp.on('data', (chunk) => { data += chunk; });
             resp.on('end', async () => {
                 if (resp.statusCode == 200) {
-                    var robots = robotsParser(`${parsedUrl.protocol}//${parsedUrl.hostname}/robots.txt`, data);
+                    let robots = robotsParser(`${parsedUrl.protocol}//${parsedUrl.hostname}/robots.txt`, data);
 
                     if (robots.isDisallowed(_url, UserAgent) && !process.env.IGNORE_ROBOTS) {
                         reject({ "name": "RobotsRestriction", "message": "Crawling forbidden due to robots.txt" });
@@ -92,8 +92,8 @@ module.exports = async function crawl(_url, _xpath) {
                                         pg = item.page - 1;
                                         pdftxt[pg] = [];
                                     } else if (item.text) {
-                                        var t = 0;
-                                        var sp = "";
+                                        let t = 0;
+                                        let sp = "";
                                         pdftxt[pg].forEach(function (val, idx) {
                                             if (val[1] == item.y) {
                                                 pdftxt[pg][idx][0] += sp + item.text;
