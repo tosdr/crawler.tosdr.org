@@ -7,7 +7,7 @@ const url = require('url');
 const https = require('https');
 const uploadjbcdn = require('./async.upload_jbcdn');
 const envIsEmpty = require('./envIsEmpty');
-const { env } = require('process');
+const pdfreader = require("pdfreader");
 require('chromedriver');
 
 module.exports = async function crawl(_url, _xpath) {
@@ -61,6 +61,56 @@ module.exports = async function crawl(_url, _xpath) {
                         }
                     }
 
+                    if (res.headers['content-type'] === "application/pdf") {
+
+                        https.get({
+                            hostname: parsedUrl.hostname,
+                            path: '/' + parsedUrl.path,
+                            headers: { 'User-Agent': UserAgent }
+                        }, resp => {
+                            let buff = new Buffer.alloc(0);
+
+                            resp.on('data', (chunk) => { buff = Buffer.concat([buff, chunk]); });
+                            resp.on('end', async () => {
+                                let pdftxt = new Array();
+                                let pg = 0;
+                                new pdfreader.PdfReader().parseBuffer(buff, function (err, item) {
+                                    if (err) {
+                                        console.log("Invalid PDF");
+                                        reject({ "name": "PDFError", "message": err.message });
+                                        return;
+                                    }
+
+                                    if (!item) {
+                                        pdftxt.forEach(function (a, idx) {
+                                            pdftxt[idx].forEach(function (v, i) {
+                                                pdftxt[idx][i].splice(1, 2);
+                                            });
+                                        });
+                                        resolve({ "raw_html": pdftxt.join(), "imagedata": null, "imageurl": null });
+                                    } else if (item && item.page) {
+                                        pg = item.page - 1;
+                                        pdftxt[pg] = [];
+                                    } else if (item.text) {
+                                        var t = 0;
+                                        var sp = "";
+                                        pdftxt[pg].forEach(function (val, idx) {
+                                            if (val[1] == item.y) {
+                                                pdftxt[pg][idx][0] += sp + item.text;
+                                                t = 1;
+                                            }
+                                        });
+                                        if (t == 0) {
+                                            pdftxt[pg].push([item.text, item.y, item.x]);
+                                        }
+                                    }
+
+                                });
+                            });
+                        });
+                        return;
+                    }
+
                     let options = new chrome.Options();
                     options.setChromeBinaryPath(chromium.path);
                     options.addArguments('--no-sandbox');
@@ -72,7 +122,6 @@ module.exports = async function crawl(_url, _xpath) {
                     options.addArguments("--disable-blink-features=AutomationControlled");
                     options.setUserPreferences({ 'download.open_pdf_in_system_reader': false });
                     options.setUserPreferences({ 'download.prompt_for_download': true });
-                    options.setUserPreferences({ 'download.default_directory': "/dev/null" });
                     options.setUserPreferences({ 'download.default_directory': "/dev/null" });
                     options.setUserPreferences({ 'plugins.always_open_pdf_externally': false });
                     options.setUserPreferences({ 'download_restrictions': 3 });
