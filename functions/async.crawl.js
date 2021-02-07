@@ -12,7 +12,7 @@ require('chromedriver');
 module.exports = async function crawl(_url, _xpath) {
 
     const parsedUrl = url.parse(_url);
-    let UserAgent = `ToSDRCrawler/${package.version} (+https://tosdr.org)`;
+    let UserAgent = `ToSDRCrawler/${package.version} (+https://to.tosdr.org/bot)`;
 
     return new Promise((resolve, reject) => {
 
