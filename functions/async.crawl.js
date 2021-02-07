@@ -163,6 +163,7 @@ module.exports = async function crawl(_url, _xpath) {
 
                         resolve({ "raw_html": html, "imagedata": imagedata, "imageurl": cdn });
                     } catch (e) {
+                        await driver.quit();
                         reject(e);
                     }
                 }).end();
