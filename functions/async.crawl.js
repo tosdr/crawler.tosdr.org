@@ -43,7 +43,12 @@ module.exports = async function crawl(_url, _xpath) {
                 options.addArguments('--lang=en');
                 options.addArguments(`--user-agent=${UserAgent}`);
                 options.addArguments("--disable-blink-features=AutomationControlled");
-                options.setUserPreferences({ 'useAutomationExtension': false });
+                options.setUserPreferences({ 'download.open_pdf_in_system_reader': false });
+                options.setUserPreferences({ 'download.prompt_for_download': true });
+                options.setUserPreferences({ 'download.default_directory': "/dev/null" });
+                options.setUserPreferences({ 'download.default_directory': "/dev/null" });
+                options.setUserPreferences({ 'plugins.always_open_pdf_externally': false });
+                options.setUserPreferences({ 'download_restrictions': 3 });
                 options.setUserPreferences({ 'excludeSwitches': ["enable-automation"] });
 
                 const driver = new webdriver.Builder()
