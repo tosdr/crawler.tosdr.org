@@ -11,6 +11,13 @@ const httpserver = http.createServer((req, res) => {
     const query = url.parse(req.url, true).query;
     res.writeHead(200, { 'content-type': 'application/json' })
     let data = { "error": false, "message": { "name": null, "remoteStacktrace": null } }
+    if (Object.keys(query).length === 0) {
+        res.writeHead(302, {
+            'Location': 'https://to.tosdr.org/bot'
+        });
+        res.end();
+        return;
+    }
     if (!query.url) {
         res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
         res.end();
