@@ -55,7 +55,7 @@ module.exports = async function crawl(_url, _xpath) {
                             reject({ "name": "MimeBlacklist", "message": `MimeType ${res.headers['content-type']} is not crawlable.` });
                             return;
                         }
-                        if (_allowed !== null && !_allowed.includes(res.headers['content-type'])) {
+                        if (_allowed !== null && !_allowed.includes(res.headers['content-type'].split(";")[0])) {
                             reject({ "name": "MimeWhitelist", "message": `MimeType ${res.headers['content-type']} is not in our whitelist. We only support ${_allowed.join(', ').trim()}` });
                             return;
                         }
