@@ -4,7 +4,7 @@ const chromium = require('chromium');
 const package = require('../package');
 const robotsParser = require('robots-parser');
 const url = require('url');
-const https = require('https');
+const { https } = require('follow-redirects');
 const uploadjbcdn = require('./async.upload_jbcdn');
 const envIsEmpty = require('./envIsEmpty');
 const pdfreader = require("pdfreader");
@@ -40,7 +40,9 @@ try {
 
                     https.request(_url, { method: 'HEAD' }, async (res) => {
 
-                        if (!res.statusCode.toString().startsWith('2') || res.statusCode !== 302) {
+						console.log(res.statusCode);
+
+                        if (!res.statusCode.toString().startsWith('2')) {
                             reject({ "name": "StatusCodeError", "message": `Expected status code in range 2xx class; got ${res.statusCode}:${res.statusMessage}` });
                             return;
                         }

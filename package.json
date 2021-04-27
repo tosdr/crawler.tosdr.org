@@ -14,6 +14,7 @@
     "chromedriver": "^88.0.0",
     "chromium": "^3.0.2",
     "dotenv": "^8.2.0",
+    "follow-redirects": "^1.14.0",
     "form-data": "^3.0.0",
     "pdfreader": "^1.2.8",
     "request": "^2.88.2",
