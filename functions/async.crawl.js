@@ -40,8 +40,8 @@ try {
 
                     https.request(_url, { method: 'HEAD' }, async (res) => {
 
-                        if (res.statusCode !== 200) {
-                            reject({ "name": "StatusCodeError", "message": `Expected status code 200:OK; got ${res.statusCode}:${res.statusMessage}` });
+                        if (!res.statusCode.toString().startsWith('2') || res.statusCode !== 302) {
+                            reject({ "name": "StatusCodeError", "message": `Expected status code in range 2xx class; got ${res.statusCode}:${res.statusMessage}` });
                             return;
                         }
                         if (typeof res.headers['content-type'] === 'undefined') {
