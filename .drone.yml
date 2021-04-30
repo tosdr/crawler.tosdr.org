@@ -125,7 +125,7 @@ trigger:
       - promote
       - cron
   target:
-  - production
+  - deploy
   cron:
   - deploy
   
