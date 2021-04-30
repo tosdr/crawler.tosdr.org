@@ -3,18 +3,148 @@ name: default
 
 steps:
       
-- name: Deploy Production
+- name: Deploy Arachne Production
   image: appleboy/drone-ssh
   settings:
     host: 
       - arachne.servers.tosdr.org
-      #- athena.servers.tosdr.org
-      #- atlas.servers.tosdr.org
-      #- avidreader.servers.tosdr.org
-      #- floppy.servers.tosdr.org
-      #- james.servers.tosdr.org
-      #- nosypeeper.servers.tosdr.org
-      #- whale.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+  
+- name: Deploy Athena Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - athena.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+  
+- name: Deploy Atlas Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - atlas.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+
+- name: Deploy AvidReader Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - avidreader.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+  
+- name: Deploy Floppy Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - floppy.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+  
+  
+- name: Deploy James Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - floppy.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+  
+  
+  
+- name: Deploy NosyPeeper Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - nosypeeper.servers.tosdr.org
+    username:
+        from_secret: SSH_USER
+    key:
+        from_secret: SSH_KEY
+    port: 22
+    script:
+      - service crawler restart
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
+  
+  
+- name: Deploy Whale Production
+  image: appleboy/drone-ssh
+  settings:
+    host: 
+      - whale.servers.tosdr.org
     username:
         from_secret: SSH_USER
     key:
