@@ -120,9 +120,6 @@ steps:
     - failure
   
 trigger:
-  event:
-  - promote
-  - cron
   target:
   - deploy
   cron:
