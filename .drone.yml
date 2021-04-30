@@ -121,9 +121,8 @@ steps:
   
 trigger:
   event:
-    includes:
-      - promote
-      - cron
+  - promote
+  - cron
   target:
   - deploy
   cron:
