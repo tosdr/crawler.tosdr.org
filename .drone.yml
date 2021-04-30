@@ -127,3 +127,17 @@ trigger:
   - production
   cron:
   - deploy
+  
+  
+---
+kind: pipeline
+name: default
+
+steps:
+      
+- name: Test
+  image: node:14
+  commands:
+  - npm test
+
+
