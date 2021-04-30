@@ -22,25 +22,6 @@ steps:
   cron:
   - deploy
   
-- name: Deploy Athena Production
-  image: appleboy/drone-ssh
-  settings:
-    host: 
-      - athena.servers.tosdr.org
-    username:
-        from_secret: SSH_USER
-    key:
-        from_secret: SSH_KEY
-    port: 22
-    script:
-      - service crawler restart
-  when:
-    event:
-    - promote
-    - cron
-  cron:
-  - deploy
-  
 - name: Deploy Atlas Production
   image: appleboy/drone-ssh
   settings:
