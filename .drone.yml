@@ -7,8 +7,8 @@ steps:
   image: appleboy/drone-ssh
   settings:
     host: 
-      #- arachne.servers.tosdr.org
-      #- athena.servers.tosdr.org
+      - arachne.servers.tosdr.org
+      - athena.servers.tosdr.org
       - atlas.servers.tosdr.org
       #- avidreader.servers.tosdr.org
       #- floppy.servers.tosdr.org
