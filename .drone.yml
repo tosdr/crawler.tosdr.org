@@ -1,5 +1,5 @@
 kind: pipeline
-name: default
+name: Deploy
 
 steps:
       
@@ -131,7 +131,7 @@ trigger:
   
 ---
 kind: pipeline
-name: default
+name: Test
 
 steps:
       
