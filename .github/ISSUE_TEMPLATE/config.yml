@@ -1,0 +1,5 @@
+  blank_issues_enabled: false
+  contact_links:
+  - name: Browser Extensions Issue Tracker
+    url: https://tosdr.atlassian.net/jira/software/c/projects/BE/issues/
+    about: Report bugs or suggest features for the Browser Extensions.
