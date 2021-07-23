@@ -12,7 +12,7 @@ const pdfreader = require("pdfreader");
 try {
 
     require('chromedriver');
-    module.exports = async function crawl(_url, _xpath) {
+    module.exports = async function crawl(_url, _xpath, Sentry) {
 
         const parsedUrl = url.parse(_url);
         let UserAgent = `ToSDRCrawler/${package.version} (+https://to.tosdr.org/bot)`;
@@ -32,6 +32,17 @@ try {
                         let robots = robotsParser(`${parsedUrl.protocol}//${parsedUrl.hostname}/robots.txt`, data);
 
                         if (robots.isDisallowed(_url, UserAgent) && !process.env.IGNORE_ROBOTS) {
+
+                            Sentry.setContext("website", {
+                                requestUrl: _url,
+                                requestXpath: _xpath,
+                                responseData: data,
+                                responseCode: resp.statusCode,
+                                responseMessage: resp.statusMessage,
+                                responseMimetype: resp.headers['content-type']
+                            });
+
+                            Sentry.captureMessage('Crawling forbidden due to robots.txt', null, );
                             reject({ "name": "RobotsRestriction", "message": "Crawling forbidden due to robots.txt" });
                             return;
                         }
@@ -43,10 +54,31 @@ try {
 						console.log(res.statusCode);
 
                         if (!res.statusCode.toString().startsWith('2')) {
+                            Sentry.setContext("website", {
+                                requestUrl: _url,
+                                requestXpath: _xpath,
+                                responseData: null,
+                                responseCode: res.statusCode,
+                                responseMessage: res.statusMessage,
+                                responseMimetype: res.headers['content-type']
+                            });
+
+                            Sentry.captureMessage(`Expected status code in range 2xx class; got ${res.statusCode}:${res.statusMessage}`);
                             reject({ "name": "StatusCodeError", "message": `Expected status code in range 2xx class; got ${res.statusCode}:${res.statusMessage}` });
                             return;
                         }
                         if (typeof res.headers['content-type'] === 'undefined') {
+
+                            Sentry.setContext("website", {
+                                requestUrl: _url,
+                                requestXpath: _xpath,
+                                responseData: null,
+                                responseCode: res.statusCode,
+                                responseMessage: res.statusMessage,
+                                responseMimetype: res.headers['content-type']
+                            });
+                            Sentry.captureMessage(`Expected header content-type to be set; got undefined`);
+
                             reject({ "name": "InvalidHeader", "message": `Expected header content-type to be set; got undefined` });
                             return;
                         }
@@ -56,16 +88,41 @@ try {
 
 
                             if (_forbidden !== null && _forbidden.includes(res.headers['content-type'])) {
+
+                                Sentry.setContext("website", {
+                                    requestUrl: _url,
+                                    requestXpath: _xpath,
+                                    responseData: null,
+                                    responseCode: res.statusCode,
+                                    responseMessage: res.statusMessage,
+                                    responseMimetype: res.headers['content-type']
+                                });
+                                Sentry.captureMessage(`MimeType ${res.headers['content-type']} is not crawlable.`);
+
                                 reject({ "name": "MimeBlacklist", "message": `MimeType ${res.headers['content-type']} is not crawlable.` });
                                 return;
                             }
                             if (_allowed !== null && !_allowed.includes(res.headers['content-type'].split(";")[0])) {
+
+
+                                Sentry.setContext("website", {
+                                    requestUrl: _url,
+                                    requestXpath: _xpath,
+                                    responseData: null,
+                                    responseCode: res.statusCode,
+                                    responseMessage: res.statusMessage,
+                                    responseMimetype: res.headers['content-type']
+                                });
+                                Sentry.captureMessage(`MimeType ${res.headers['content-type']} is not in our whitelist. We only support ${_allowed.join(', ').trim()}`);
+
                                 reject({ "name": "MimeWhitelist", "message": `MimeType ${res.headers['content-type']} is not in our whitelist. We only support ${_allowed.join(', ').trim()}` });
                                 return;
                             }
                         }
 
                         if (res.headers['content-type'] === "application/pdf") {
+
+
 
                             https.get({
                                 hostname: parsedUrl.hostname,
@@ -81,6 +138,20 @@ try {
                                     new pdfreader.PdfReader().parseBuffer(buff, function (err, item) {
                                         if (err) {
                                             console.log("Invalid PDF");
+
+
+                                            Sentry.setContext("website", {
+                                                requestUrl: _url,
+                                                requestXpath: _xpath,
+                                                responseData: 'Buffer',
+                                                responseCode: res.statusCode,
+                                                responseMessage: res.statusMessage,
+                                                responseMimetype: res.headers['content-type'],
+                                                responseStacktrace: err
+                                            });
+
+                                            Sentry.captureMessage(`PDF Error ${err.message}`);
+
                                             reject({ "name": "PDFError", "message": err.message });
                                             return;
                                         }
@@ -152,25 +223,36 @@ try {
                                 let html = await element.getAttribute('innerHTML');
                                 await driver.executeScript("arguments[0].scrollIntoView(true); arguments[0].style.border='2px solid red'; return true", element);
                                 let imagedata = await driver.takeScreenshot();
-                                let cdn = null;
-                                if (!envIsEmpty("JBCDN_UPKEY") && !envIsEmpty("JBCDN_SLUG") && !envIsEmpty("JBCDN_TTL")) {
-                                    let cdnResponse = await uploadjbcdn(imagedata);
-                                    if (cdnResponse.error) {
-                                        cdn = false;
-                                    } else {
-                                        cdn = cdnResponse.data.result.URL;
-                                    }
-                                }
 
                                 await driver.quit();
 
-
-                                resolve({ "raw_html": html, "imagedata": imagedata, "imageurl": cdn });
+                                resolve({ "raw_html": html, "imagedata": imagedata });
                             } catch (e) {
                                 await driver.quit();
                                 reject(e);
+
+                                Sentry.setContext("website", {
+                                    requestUrl: _url,
+                                    requestXpath: _xpath,
+                                    responseData: null,
+                                    responseCode: res.statusCode,
+                                    responseMessage: res.statusMessage,
+                                    responseMimetype: res.headers['content-type'],
+                                    responseStacktrace: e
+                                });
+                                Sentry.captureMessage(`Driver Error ${e.message}`);
                             }
                         } catch (e) {
+                            Sentry.setContext("website", {
+                                requestUrl: _url,
+                                requestXpath: _xpath,
+                                responseData: null,
+                                responseCode: res.statusCode,
+                                responseMessage: res.statusMessage,
+                                responseMimetype: res.headers['content-type'],
+                                responseStacktrace: e
+                            });
+                            Sentry.captureMessage(`Driver Error ${e.message}`);
                             reject({ "name": "DriverError", "message": e.message });
                         }
                     }).end();
@@ -179,9 +261,20 @@ try {
 
             }).on("error", (err) => {
                 reject(err);
+
+                Sentry.setContext("website", {
+                    requestUrl: _url,
+                    requestXpath: _xpath,
+                    responseData: null,
+                    responseCode: null,
+                    responseMessage: null,
+                    responseMimetype: null,
+                    responseStacktrace: err
+                });
+                Sentry.captureMessage(`HTTP Error ${err.message}`);
             });
         });
     }
 } catch (exception) {
-    reject(exception);
+    console.log(exception);
 }
