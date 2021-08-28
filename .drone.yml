@@ -172,9 +172,26 @@ steps:
     - cron
   cron:
   - deploy
+
+- name: Jira Production
+  image: plugins/jira
+  settings:
+    client_id:
+      from_secret: jira_client_id
+    client_secret:
+      from_secret: jira_client_secret
+    project: TDC
+    instance: tosdr
+    environment: production
+  when:
+    event:
+    - promote
+    - cron
+  cron:
+  - deploy
   
 ---
 kind: signature
-hmac: b6e764a8eecffa2f4ee9c8f0a6df8daa4a2fe39c9d8a57627b185fd36e2a8c8e
+hmac: 974be397a4c37f930781244c5264e3824e46e564d2f48cdd428e128c24a8a0ad
 
 ...
