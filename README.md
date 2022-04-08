@@ -1,3 +1,7 @@
+## Required Envs:
+
+- `SELENIUM_SERVER=""` - **Url to your Selenium Server
+
 ## Optional Envs:
 
 - `API_ENDPOINT=https://api.tosdr.org` - **CrispCMS endpoint for api key validation

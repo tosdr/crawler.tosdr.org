@@ -1,6 +1,5 @@
 const webdriver = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
-const chromium = require('chromium');
 const package = require('../package');
 const robotsParser = require('robots-parser');
 const url = require('url');
@@ -9,8 +8,6 @@ const envIsEmpty = require('./envIsEmpty');
 const pdfreader = require("pdfreader");
 
 try {
-
-    require('chromedriver');
     module.exports = async function crawl(_url, _xpath, Sentry) {
 
         const parsedUrl = url.parse(_url);
@@ -193,7 +190,6 @@ try {
                         }
 
                         let options = new chrome.Options();
-                        options.setChromeBinaryPath(chromium.path);
                         options.addArguments('--no-sandbox');
                         options.addArguments('--headless');
                         options.addArguments('--disable-gpu');
@@ -210,6 +206,7 @@ try {
                         try {
                             const driver = new webdriver.Builder()
                                 .forBrowser('chrome')
+                                .usingServer(process.env.SELENIUM_SERVER)
                                 .setChromeOptions(options)
                                 .build();
 

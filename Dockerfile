@@ -4,6 +4,7 @@ COPY crawler /var/www/crawler
 
 EXPOSE 80
 
+ENV SELENIUM_SERVER=""
 ENV API_ENDPOINT="https://api.tosdr.org"
 ENV API_KEY=""
 ENV IGNORE_ROBOTS=false
@@ -14,8 +15,6 @@ ENV SENTRY_DSN=""
 WORKDIR /var/www/crawler
 
 RUN echo "#" > .env &&  \
-    apt-get update && \
-    apt-get install -y chromium && \
     npm install
 
 
