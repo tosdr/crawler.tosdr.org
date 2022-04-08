@@ -80,63 +80,7 @@ try {
 
         let UserAgent = `ToSDRCrawler/${package.version} (+https://tosdr.org)`;
 
-        console.log("Getting api key");
-        axios.get(`https://api.tosdr.org/apikey/v1/?apikey=${query.apikey}`, {
-            headers: {
-                'User-Agent': UserAgent,
-                'Authorization': process.env.API_KEY,
-            },
-            validateStatus: function (status) {
-                return true;
-            },
-        }).then((response) => {
-            console.log("Got api key");
-            if (response.status === 403 || response.status === 401) {
-                Sentry.captureMessage(response.statusText);
-                transaction.finish();
-                res.write(JSON.stringify(functions.response.error("ServerError", "Invalid Server API Key. Misconfigured")));
-                res.end();
-                return;
-            } else if (response.status !== 200) {
-                Sentry.captureMessage(response.statusText);
-                transaction.finish();
-                res.write(JSON.stringify(functions.response.error("ServerError", response.statusText)));
-                res.end();
-                return;
-            }
-
-            let responseData = response.data;
-
-
-            if (!(responseData.error & 0x100) ||
-                !(responseData.parameters.permissions & 0x8) ||
-                responseData.parameters.revoked ||
-                (responseData.parameters.expires_at != null ||
-                    Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
-                )) {
-
-                let reason = "Unknown";
-                if(!(responseData.error & 0x100)){
-                    reason = "Invalid API Key!";
-                }else if(!(responseData.parameters.permissions & 0x8)){
-                    reason = "Missing Permissions";
-                }else if(responseData.parameters.revoked){
-                    reason = "Revoked Key";
-                }else if((responseData.parameters.expires_at != null ||
-                    Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
-                )){
-                    reason = "Key expired";
-                }
-
-
-
-                console.log(responseData);
-                res.write(JSON.stringify(functions.response.error("RequestArgumentErr", reason)));
-                res.end();
-                return;
-            }
-
-
+        if(functions.envIsEmpty("API_KEY")){
             functions.crawl(query.url, query.xpath, Sentry).then((response) => {
                 console.log("Crawled Document");
                 res.write(JSON.stringify(functions.response.success(response)));
@@ -149,12 +93,70 @@ try {
                 console.log("Finished transaction");
                 transaction.finish();
             });
-        }).catch((error) => {
+        }else{
+            console.log("Getting api key");
+            axios.get(`${process.env.API_ENDPOINT}/apikey/v1/?apikey=${query.apikey}`, {
+                headers: {
+                    'User-Agent': UserAgent,
+                    'Authorization': process.env.API_KEY,
+                },
+                validateStatus: function (status) {
+                    return true;
+                },
+            }).then((response) => {
 
-        }).finally(() => {
-            console.log("Finished transaction");
-            transaction.finish();
-        });
+                console.log("Got api key");
+                if (response.status === 403 || response.status === 401) {
+                    Sentry.captureMessage(response.statusText);
+                    transaction.finish();
+                    res.write(JSON.stringify(functions.response.error("ServerError", "Invalid Server API Key. Misconfigured")));
+                    res.end();
+                    return;
+                } else if (response.status !== 200) {
+                    Sentry.captureMessage(response.statusText);
+                    transaction.finish();
+                    res.write(JSON.stringify(functions.response.error("ServerError", response.statusText)));
+                    res.end();
+                    return;
+                }
+
+                let responseData = response.data;
+
+
+                if (!(responseData.error & 0x100) ||
+                    !(responseData.parameters.permissions & 0x8) ||
+                    responseData.parameters.revoked ||
+                    (responseData.parameters.expires_at != null ||
+                        Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
+                    )) {
+
+                    let reason = "Unknown";
+                    if(!(responseData.error & 0x100)){
+                        reason = "Invalid API Key!";
+                    }else if(!(responseData.parameters.permissions & 0x8)){
+                        reason = "Missing Permissions";
+                    }else if(responseData.parameters.revoked){
+                        reason = "Revoked Key";
+                    }else if((responseData.parameters.expires_at != null ||
+                        Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
+                    )){
+                        reason = "Key expired";
+                    }
+
+
+
+                    console.log(responseData);
+                    res.write(JSON.stringify(functions.response.error("RequestArgumentErr", reason)));
+                    res.end();
+                    return;
+                }
+            }).catch((error) => {
+
+            }).finally(() => {
+                console.log("Finished transaction");
+                transaction.finish();
+            });
+        }
 
     });
 

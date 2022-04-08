@@ -4,6 +4,7 @@ COPY crawler /var/www/crawler
 
 EXPOSE 80
 
+ENV API_ENDPOINT="https://api.tosdr.org"
 ENV API_KEY=""
 ENV IGNORE_ROBOTS=false
 ENV FORBIDDEN_MIME=application/octet-stream
