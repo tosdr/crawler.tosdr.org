@@ -194,6 +194,7 @@ try {
 
                         let options = new chrome.Options().headless().windowSize({ width, height });
                         options.addArguments(`--user-agent=${UserAgent}`);
+                        options.addArguments(`--lang=en`);
                         options.addArguments("--disable-blink-features=AutomationControlled");
                         options.setUserPreferences({
                             'download.open_pdf_in_system_reader': false,
@@ -205,9 +206,10 @@ try {
                             "intl.accept_languages": "en"
                         });
                         try {
+
                             const driver = new webdriver.Builder()
-                                .forBrowser('chrome')
                                 .usingServer(process.env.SELENIUM_SERVER)
+                                .forBrowser('chrome')
                                 .setChromeOptions(options)
                                 .build();
 
