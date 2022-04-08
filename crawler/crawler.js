@@ -109,6 +109,7 @@ try {
 
 
             if (!(responseData.error & 0x100) || !(responseData.parameters.permissions & 0x8) || responseData.parameters.revoked || (responseData.parameters.expires_at != null || Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime()))) {
+                console.log(responseData);
                 res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Invalid API Key")));
                 res.end();
                 return;
