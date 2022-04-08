@@ -193,7 +193,7 @@ try {
                         let height = 1080;
 
                         let options = new chrome.Options().headless().windowSize({ width, height });
-                        options.addArguments('--lang=en');
+                        options.addArguments('lang=en-US');
                         options.addArguments(`--user-agent=${UserAgent}`);
                         options.addArguments("--disable-blink-features=AutomationControlled");
                         options.setUserPreferences({ 'download.open_pdf_in_system_reader': false });
