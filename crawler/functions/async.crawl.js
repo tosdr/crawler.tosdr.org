@@ -189,11 +189,10 @@ try {
                             return;
                         }
 
-                        let options = new chrome.Options();
-                        options.addArguments('--no-sandbox');
-                        options.addArguments('--headless');
-                        options.addArguments('--disable-gpu');
-                        options.addArguments('--window-size=1280,960');
+                        let width = 1920;
+                        let height = 1080;
+
+                        let options = new chrome.Options().headless().windowSize({ width, height });
                         options.addArguments('--lang=en');
                         options.addArguments(`--user-agent=${UserAgent}`);
                         options.addArguments("--disable-blink-features=AutomationControlled");
@@ -207,7 +206,7 @@ try {
                             const driver = new webdriver.Builder()
                                 .forBrowser('chrome')
                                 .usingServer(process.env.SELENIUM_SERVER)
-                                //.setChromeOptions(options)
+                                .setChromeOptions(options)
                                 .build();
 
                             try {

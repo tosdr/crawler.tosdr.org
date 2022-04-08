@@ -147,6 +147,19 @@ try {
                     res.end();
                     return;
                 }
+
+                functions.crawl(query.url, query.xpath, Sentry).then((response) => {
+                    console.log("Crawled Document");
+                    res.write(JSON.stringify(functions.response.success(response)));
+                    res.end();
+                }).catch((err) => {
+                    console.log("Send Error to Sentry");
+                    res.write(JSON.stringify(functions.response.error(err.name, err.message)));
+                    res.end();
+                }).finally(() => {
+                    console.log("Finished transaction");
+                    transaction.finish();
+                });
             }).catch((error) => {
 
             }).finally(() => {
