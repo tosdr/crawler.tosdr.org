@@ -136,8 +136,8 @@ try {
 
     });
 
-    httpserver.listen(parseInt(process.env.HTTP_PORT), process.env.HTTP_BIND, () => {
-        console.log(color.green(`HTTP Web server started on port ${color.cyan(process.env.HTTP_BIND)}:${color.cyan(process.env.HTTP_PORT)}`));
+    httpserver.listen(80, "0.0.0.0", () => {
+        console.log(color.green(`HTTP Web server started on port ${color.cyan("0.0.0.0")}:${color.cyan(80)}`));
         console.log(color.blue("********************** Done ************************"));
         console.log(color.green("HTTP Server is now ready to accept connections"));
     });
