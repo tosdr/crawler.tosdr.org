@@ -108,9 +108,30 @@ try {
             let responseData = response.data;
 
 
-            if (!(responseData.error & 0x100) || !(responseData.parameters.permissions & 0x8) || responseData.parameters.revoked || (responseData.parameters.expires_at != null || Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime()))) {
+            if (!(responseData.error & 0x100) ||
+                !(responseData.parameters.permissions & 0x8) ||
+                responseData.parameters.revoked ||
+                (responseData.parameters.expires_at != null ||
+                    Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
+                )) {
+
+                let reason = "Unknown";
+                if(!(responseData.error & 0x100)){
+                    reason = "Invalid API Key!";
+                }else if(!(responseData.parameters.permissions & 0x8)){
+                    reason = "Missing Permissions";
+                }else if(responseData.parameters.revoked){
+                    reason = "Revoked Key";
+                }else if((responseData.parameters.expires_at != null ||
+                    Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
+                )){
+                    reason = "Key expired";
+                }
+
+
+
                 console.log(responseData);
-                res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Invalid API Key")));
+                res.write(JSON.stringify(functions.response.error("RequestArgumentErr", reason)));
                 res.end();
                 return;
             }
