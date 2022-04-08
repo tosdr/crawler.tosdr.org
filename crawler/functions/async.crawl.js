@@ -207,7 +207,7 @@ try {
                             const driver = new webdriver.Builder()
                                 .forBrowser('chrome')
                                 .usingServer(process.env.SELENIUM_SERVER)
-                                .setChromeOptions(options)
+                                //.setChromeOptions(options)
                                 .build();
 
                             try {
