@@ -193,15 +193,17 @@ try {
                         let height = 1080;
 
                         let options = new chrome.Options().headless().windowSize({ width, height });
-                        options.addArguments('lang=en-US');
                         options.addArguments(`--user-agent=${UserAgent}`);
                         options.addArguments("--disable-blink-features=AutomationControlled");
-                        options.setUserPreferences({ 'download.open_pdf_in_system_reader': false });
-                        options.setUserPreferences({ 'download.prompt_for_download': true });
-                        options.setUserPreferences({ 'download.default_directory': "/dev/null" });
-                        options.setUserPreferences({ 'plugins.always_open_pdf_externally': false });
-                        options.setUserPreferences({ 'download_restrictions': 3 });
-                        options.setUserPreferences({ 'excludeSwitches': ["enable-automation"] });
+                        options.setUserPreferences({
+                            'download.open_pdf_in_system_reader': false,
+                            'excludeSwitches': ["enable-automation"] ,
+                            'download.prompt_for_download': true,
+                            'download.default_directory': "/dev/null",
+                            'plugins.always_open_pdf_externally': false,
+                            'download_restrictions': 3,
+                            "intl.accept_languages": "en"
+                        });
                         try {
                             const driver = new webdriver.Builder()
                                 .forBrowser('chrome')
