@@ -5,7 +5,6 @@ const package = require('../package');
 const robotsParser = require('robots-parser');
 const url = require('url');
 const { https } = require('follow-redirects');
-const uploadjbcdn = require('./async.upload_jbcdn');
 const envIsEmpty = require('./envIsEmpty');
 const pdfreader = require("pdfreader");
 
