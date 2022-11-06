@@ -17,8 +17,8 @@ WORKDIR /var/www/crawler
 RUN echo "#" > .env &&  \
     npm install && \
     apt-get install -y unzip wget && \
-    mkdir chromedriver && \
-    cd chromedriver && \
+    mkdir /var/www/chromedriver && \
+    cd /var/www/chromedriver && \
     wget http://chromedriver.storage.googleapis.com/108.0.5359.22/chromedriver_linux64.zip -O /var/www/chromedriver/chrome.zip && \
     unzip chrome.zip && \
     export PATH=$PATH:/var/www/chromedriver
