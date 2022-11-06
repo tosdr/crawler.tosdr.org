@@ -16,7 +16,7 @@ WORKDIR /var/www/crawler
 
 RUN echo "#" > .env &&  \
     npm install && \
-    apt-get install chromium-chromedriver
+    apt-get install chromium-driver
 
 
 ENTRYPOINT ["node", "/var/www/crawler/crawler.js"]
