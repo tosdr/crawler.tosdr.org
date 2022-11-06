@@ -1,4 +1,4 @@
-FROM selenium/node-chrome
+FROM node:lts-bullseye
 
 COPY crawler /var/www/crawler
 
