@@ -15,7 +15,8 @@ ENV SENTRY_DSN=""
 WORKDIR /var/www/crawler
 
 RUN echo "#" > .env &&  \
-    npm install
+    npm install && \
+    apt-get install chromium-chromedriver
 
 
 ENTRYPOINT ["node", "/var/www/crawler/crawler.js"]
