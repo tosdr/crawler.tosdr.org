@@ -21,7 +21,7 @@ RUN echo "#" > .env &&  \
     cd /var/www/chromedriver && \
     wget http://chromedriver.storage.googleapis.com/108.0.5359.22/chromedriver_linux64.zip -O /var/www/chromedriver/chrome.zip && \
     unzip chrome.zip && \
-    export PATH=$PATH:/var/www/chromedriver
+    mv /var/www/chromedriver/chromedriver /usr/local/bin/chromedriver
 
 
 ENTRYPOINT ["node", "/var/www/crawler/crawler.js"]
