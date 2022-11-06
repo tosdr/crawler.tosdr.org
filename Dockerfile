@@ -16,7 +16,12 @@ WORKDIR /var/www/crawler
 
 RUN echo "#" > .env &&  \
     npm install && \
-    apt-get install chromium-driver
+    apt-get install -y zip unzip wget && \
+    wget http://chromedriver.storage.googleapis.com/108.0.5359.22/chromedriver_linux64.zip -O /var/www/chrome.zip && \
+    mkdir chromedriver && \
+    cd chromedriver && \
+    unzip chrome.zip && \
+    export PATH=$PATH:/var/www/chromedriver
 
 
 ENTRYPOINT ["node", "/var/www/crawler/crawler.js"]
