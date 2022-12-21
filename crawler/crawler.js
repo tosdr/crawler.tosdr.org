@@ -88,7 +88,7 @@ try {
         }
 
         Sentry.setTag("request_id", request_id)
-        Sentry.setTag("crawler", process.env.CRAWLER ? process.env.CRAWLER : 'legacy');
+        Sentry.setTag("crawler", process.env.CRAWLER_NAME ? process.env.CRAWLER_NAME : 'legacy');
 
 
 
