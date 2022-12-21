@@ -7,7 +7,6 @@ const functions = require('./functions/index');
 const package = require('./package');
 const Sentry = require("@sentry/node");
 const Tracing = require("@sentry/tracing");
-const url = require('url');
 const { https } = require('follow-redirects');
 
 
