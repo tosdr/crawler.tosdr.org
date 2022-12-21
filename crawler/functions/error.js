@@ -3,6 +3,7 @@ function error(name, remoteStacktrace) {
 		error: true,
 		message: {
 			name: name,
+			crawler: process.env.CRAWLER_NAME,
 			remoteStacktrace: remoteStacktrace
 		}
 	}

@@ -25,7 +25,7 @@ try {
 
 
         const query = url.parse(req.url, true).query;
-        let data = {"error": false, "message": {"name": null, "remoteStacktrace": null}}
+
         if (Object.keys(query).length === 0) {
             res.writeHead(302, {
                 'Location': 'https://to.tosdr.org/bot'

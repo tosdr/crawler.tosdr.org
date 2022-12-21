@@ -16,4 +16,4 @@ services:
       - FORBIDDEN_MIME=application/octet-stream
       - ALLOWED_MIME=text/plain,text/html,application/pdf,text/html; charset=UTF-8,text/html; charset=utf-8
       - SENTRY_DSN=https://2f3572a1ac2344f98dc954269e7c1791@sentry.tosdr.org/4
-      - CRAWLER=atlas
+      - CRAWLER_NAME=atlas

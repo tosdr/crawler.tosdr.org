@@ -3,6 +3,7 @@ function success(args) {
         error: false,
         message: {
             name: null,
+			crawler: process.env.CRAWLER_NAME,
             remoteStacktrace: null
         },
     };
