@@ -7,6 +7,8 @@ const functions = require('./functions/index');
 const package = require('./package');
 const Sentry = require("@sentry/node");
 const Tracing = require("@sentry/tracing");
+const url = require('url');
+const { https } = require('follow-redirects');
 
 
 const axios = require('axios');
@@ -17,6 +19,18 @@ if(process.env.SENTRY_DSN) {
         dsn: process.env.SENTRY_DSN,
         tracesSampleRate: 1.0,
     });
+}
+
+if(process.env.HEALTHCHECK_URL){
+    const parsedUrl = url.parse(process.env.HEALTHCHECK_URL);
+    setInterval(function() {
+        console.log("Pinging " + process.env.HEALTHCHECK_URL);
+        https.get({
+            hostname: parsedUrl.hostname,
+            path: '/' + parsedUrl.path,                                
+        });
+        console.log("Done Pinging " + process.env.HEALTHCHECK_URL);
+    }, 5000);
 }
 
 try {
