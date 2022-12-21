@@ -24,7 +24,7 @@ if(process.env.HEALTHCHECK_URL){
         console.log("Pinging " + process.env.HEALTHCHECK_URL);
         axios.get(process.env.HEALTHCHECK_URL);
         console.log("Done Pinging " + process.env.HEALTHCHECK_URL);
-    }, 5000);
+    }, 59000);
 }
 
 try {
