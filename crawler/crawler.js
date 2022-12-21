@@ -30,7 +30,7 @@ if(process.env.HEALTHCHECK_URL){
             path: '/' + parsedUrl.path,                                
         });
         console.log("Done Pinging " + process.env.HEALTHCHECK_URL);
-    }, 5000);
+    }, 60000);
 }
 
 try {
