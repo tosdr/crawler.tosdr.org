@@ -86,7 +86,7 @@ try {
 
 
 
-        let UserAgent = `ToSDRCrawler/${package.version} (+https://tosdr.org)`;
+        let UserAgent = `ToSDRCrawler/${package.version} (+https://tosdr.org) Region/${process.env.CRAWLER_NAME}`;
 
         if(functions.envIsEmpty("API_KEY")){
             functions.crawl(query.url, query.xpath, Sentry).then((response) => {
