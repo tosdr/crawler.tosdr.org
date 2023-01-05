@@ -35,9 +35,9 @@ try {
         const query = url.parse(req.url, true).query;
 
         if (Object.keys(query).length === 0) {
-            res.writeHead(302, {
-                'Location': 'https://to.tosdr.org/bot'
-            });
+            res.write(JSON.stringify(functions.response.success({
+                "message": "Healthy!"
+            })));
             res.end();
             return;
         }
