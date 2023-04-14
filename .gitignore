@@ -2,3 +2,4 @@ crawler/.env
 crawler/node_modules
 .vs
 .idea
+sessions

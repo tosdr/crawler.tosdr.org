@@ -1,6 +1,6 @@
 {
   "name": "crawler",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,14 +11,14 @@
   "dependencies": {
     "@sentry/node": "^6.10.0",
     "@sentry/tracing": "^6.10.0",
+    "appwrite": "^11.0.0",
     "axios": "^0.21.1",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
     "follow-redirects": "^1.14.0",
     "form-data": "^3.0.0",
+    "node-localstorage": "^2.2.1",
     "pdfreader": "^1.2.8",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6",
     "robots-parser": "^2.1.1",
     "selenium-webdriver": "^4.0.0-alpha.8",
     "uuid": "^8.3.2"

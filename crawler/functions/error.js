@@ -4,7 +4,7 @@ function error(name, remoteStacktrace) {
 		message: {
 			name: name,
 			crawler: process.env.CRAWLER_NAME,
-			remoteStacktrace: remoteStacktrace
+			remoteStacktrace: remoteStacktrace,
 		}
 	}
 }

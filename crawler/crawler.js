@@ -4,186 +4,198 @@ const uuid = require('uuid');
 const color = require('chalk');
 const url = require('url');
 const functions = require('./functions/index');
-const package = require('./package');
+const packagejson = require('./package');
 const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
-
-
 const axios = require('axios');
+const localstorage = require('node-localstorage');
+const appwrite = require('appwrite');
+
+
+console.log(color.blue("********************** Booting ************************"));
+
+console.log(color.yellow("** Reading .env **"));
+
+global.window = {
+    console: {warn: (() => {})},
+    localStorage: new localstorage.LocalStorage(process.env.STORAGE_PATH ?? "../sessions")
+};
+
 dotenv.config();
 
-if(process.env.SENTRY_DSN) {
-    Sentry.init({
-        dsn: process.env.SENTRY_DSN,
-        tracesSampleRate: 1.0,
-    });
-}
+const client = new appwrite.Client()
+    .setEndpoint('https://appwrite.jrbit.de/v1') // Your API Endpoint
+    .setProject('6438e3173a7ec7628d22');               // Your project ID
 
-if(process.env.HEALTHCHECK_URL){
-    setInterval(function() {
-        console.log("Pinging " + process.env.HEALTHCHECK_URL);
-        axios.get(process.env.HEALTHCHECK_URL);
-        console.log("Done Pinging " + process.env.HEALTHCHECK_URL);
-    }, 59000);
-}
-
-try {
-
-    const httpserver = http.createServer((req, res) => {
+const account = new appwrite.Account(client);
 
 
-        const query = url.parse(req.url, true).query;
+async function init() {
+    try {
 
-        if (Object.keys(query).length === 0) {
-            res.write(JSON.stringify(functions.response.success({
-                "message": "Healthy!"
-            })));
-            res.end();
-            return;
+        let session = null;
+        let currentAccount = null;
+
+        if(!functions.envIsEmpty('LOGIN_CREDENTIALS')){
+
+            let credentails = process.env.LOGIN_CREDENTIALS.split(":");
+            console.log(color.yellow("** Authenticating with master server using provided credentials **"));
+            
+
+            try {
+                session = await account.getSession('current');
+                currentAccount = await account.get();
+                console.log(color.yellow(`** Logging in using existing Session **`));
+            }catch(err){
+                console.log(color.yellow(`** Creating new Session **`));
+                session = await account.createEmailSession(
+                    credentails[0],
+                    credentails[1]
+                );
+                currentAccount = await account.get();
+            }
+
+
+
+            console.log(color.yellow(`** Logged in as ${color.blue(currentAccount.name)} via ${color.blue(currentAccount.email)} **`));
         }
 
-        let request_id = uuid.v4();
 
-
-        const transaction = Sentry.startTransaction({
-            op: "transaction",
-            name: "Document Crawl",
-        });
-
-
-        Sentry.setContext("website", {
-            url: query.url,
-            xpath: query.xpath
-        });
-
-        res.writeHead(200, {'content-type': 'application/json', 'x-request-id': request_id});
-
-        if (!query.url) {
-            res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
-            res.end();
-            transaction.finish();
-            return;
-        }
-        if (!query.apikey && !functions.envIsEmpty("API_KEY")) {
-            res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
-            res.end();
-            transaction.finish();
-            return;
-        }
-        if (query.xpath === "" || typeof query.xpath === 'undefined') {
-            query.xpath = "//body";
-        }
-
-        if (req.method !== "GET") {
-            res.write(JSON.stringify(functions.response.error("RequestMethodErr", "Only GET is supported")));
-            res.end();
-            transaction.finish();
-            return;
-        }
-
-        Sentry.setTag("request_id", request_id)
-        Sentry.setTag("crawler", process.env.CRAWLER_NAME ? process.env.CRAWLER_NAME : 'legacy');
-
-
-
-        let UserAgent = `ToSDRCrawler/${package.version} (+https://tosdr.org) Region/${process.env.CRAWLER_NAME}`;
-
-        if(functions.envIsEmpty("API_KEY")){
-            functions.crawl(query.url, query.xpath, Sentry).then((response) => {
-                console.log("Crawled Document");
-                res.write(JSON.stringify(functions.response.success(response)));
-                res.end();
-            }).catch((err) => {
-                console.log("Send Error to Sentry");
-                res.write(JSON.stringify(functions.response.error(err.name, err.message)));
-                res.end();
-            }).finally(() => {
-                console.log("Finished transaction");
-                transaction.finish();
+        let apikey = (await account.getPrefs()).apikey ?? null;
+        
+        if(!functions.envIsEmpty('SENTRY_DSN')) {
+            Sentry.init({
+                dsn: process.env.SENTRY_DSN,
+                tracesSampleRate: 1.0,
             });
-        }else{
-            console.log("Getting api key");
-            axios.get(`${process.env.API_ENDPOINT}/apikey/v1/?apikey=${query.apikey}`, {
-                headers: {
-                    'User-Agent': UserAgent,
-                    'Authorization': process.env.API_KEY,
-                },
-                validateStatus: function (status) {
-                    return true;
-                },
-            }).then((response) => {
-
-                console.log("Got api key");
-                if (response.status === 403 || response.status === 401) {
-                    Sentry.captureMessage(response.statusText);
-                    transaction.finish();
-                    res.write(JSON.stringify(functions.response.error("ServerError", "Invalid Server API Key. Misconfigured")));
-                    res.end();
-                    return;
-                } else if (response.status !== 200) {
-                    Sentry.captureMessage(response.statusText);
-                    transaction.finish();
-                    res.write(JSON.stringify(functions.response.error("ServerError", response.statusText)));
-                    res.end();
-                    return;
-                }
-
-                let responseData = response.data;
-
-
-                if (!(responseData.error & 0x100) ||
-                    !(responseData.parameters.permissions & 0x8) ||
-                    responseData.parameters.revoked) {
-
-                    let reason = "Unknown";
-                    if(!(responseData.error & 0x100)){
-                        reason = "Invalid API Key!";
-                    }else if(!(responseData.parameters.permissions & 0x8)){
-                        reason = "Missing Permissions";
-                    }else if(responseData.parameters.revoked){
-                        reason = "Revoked Key";
-                    }else if((responseData.parameters.expires_at != null ||
-                        Math.floor(new Date(responseData.parameters.expires_at).getTime()) > Math.floor(new Date().getTime())
-                    )){
-                        reason = "Key expired";
-                    }
-
-
-
-                    console.log(responseData);
-                    res.write(JSON.stringify(functions.response.error("RequestArgumentErr", reason)));
+        }
+        
+        if(!functions.envIsEmpty('HEALTHCHECK_URL')){
+            setInterval(function() {
+                console.log("Pinging " + process.env.HEALTHCHECK_URL);
+                axios.get(process.env.HEALTHCHECK_URL);
+                console.log("Done Pinging " + process.env.HEALTHCHECK_URL);
+            }, 59000);
+        }
+        
+        try {
+        
+            const httpserver = http.createServer(async (req, res) => {
+        
+        
+                const query = url.parse(req.url, true).query;
+        
+                if (Object.keys(query).length === 0) {
+                    res.write(JSON.stringify(functions.response.success({
+                        "message": "Healthy!"
+                    })));
                     res.end();
                     return;
                 }
-
-                functions.crawl(query.url, query.xpath, Sentry).then((response) => {
-                    console.log("Crawled Document");
-                    res.write(JSON.stringify(functions.response.success(response)));
-                    res.end();
-                }).catch((err) => {
-                    console.log("Send Error to Sentry");
-                    res.write(JSON.stringify(functions.response.error(err.name, err.message)));
-                    res.end();
-                }).finally(() => {
-                    console.log("Finished transaction");
-                    transaction.finish();
+        
+                let request_id = uuid.v4();
+        
+        
+                const transaction = Sentry.startTransaction({
+                    op: "transaction",
+                    name: "Document Crawl",
                 });
-            }).catch((error) => {
+        
+        
+                Sentry.setContext("website", {
+                    url: query.url,
+                    xpath: query.xpath
+                });
+        
+                res.writeHead(200, {
+                    'content-type': 'application/json', 
+                    'x-request-id': request_id, 
+                    'x-crawler-version': packagejson.version
+                });
+        
+                if (!query.url) {
+                    res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
+                    res.end();
+                    if(!functions.envIsEmpty('SENTRY_DSN')) {
+                        transaction.finish();
+                    }
+                    return;
+                }
+                if (!query.apikey && !apikey) {
+                    res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Required arguments missing")));
+                    res.end();
+                    if(!functions.envIsEmpty('SENTRY_DSN')) {
+                        transaction.finish();
+                    }
+                    return;
+                }
+                if (query.xpath === "" || typeof query.xpath === 'undefined') {
+                    query.xpath = "//body";
+                }
+        
+                if (req.method !== "GET") {
+                    res.write(JSON.stringify(functions.response.error("RequestMethodErr", "Only GET is supported")));
+                    res.end();
 
-            }).finally(() => {
-                console.log("Finished transaction");
-                transaction.finish();
+                    if(!functions.envIsEmpty('SENTRY_DSN')) {
+                                transaction.finish();
+                    }
+                    return;
+                }
+
+                if(!functions.envIsEmpty('SENTRY_DSN')) {
+                    Sentry.setTag("request_id", request_id);
+                    if(session !== null){
+                        Sentry.setTag("crawler", currentAccount.name ?? 'legacy');
+                    }
+                }
+        
+                if(!apikey || apikey === query.apikey){
+                    const response = await functions.crawl(query.url, query.xpath, Sentry)
+                        
+                    try {
+                        console.log("Crawled Document");
+                        res.write(JSON.stringify(functions.response.success(response)));
+                        res.end();
+                    }catch(ex){
+                        console.log("Send Error to Sentry");
+                        res.write(JSON.stringify(functions.response.error(err.name, err.message)));
+                        res.end();
+                    }
+                    console.log("Finished transaction");
+
+                    if(!functions.envIsEmpty('SENTRY_DSN')) {
+                                transaction.finish();
+                    }
+                    return;
+                    
+                }else{
+                    res.write(JSON.stringify(functions.response.error("RequestArgumentErr", "Invalid API Key")));
+                    return res.end();
+                }
             });
+        
+            httpserver.listen(process.env.PORT ?? 80, process.env.LISTEN ?? "0.0.0.0", () => {
+                console.log(color.green(`HTTP Web server started on port ${color.cyan(process.env.LISTEN ?? "0.0.0.0")}:${color.cyan(process.env.PORT ?? 80)}`));
+                console.log(color.blue("********************** Done ************************"));
+                console.log(color.green("HTTP Server is now ready to accept connections"));
+            });
+        
+        } catch(err){
+
+            if(!functions.envIsEmpty('SENTRY_DSN')) {
+                Sentry.captureException(err);
+            }else{
+                console.log(err);
+            }    
         }
+    
+    }catch(err){
+        console.log(color.red("********************** Failed to Boot ************************"));
+        console.log(color.yellow("** Failed to authenticate with master Server, please check your LOGIN_CREDENTIALS **"));        
+        console.log(color.red(err));
+    }
 
-    });
 
-    httpserver.listen(80, "0.0.0.0", () => {
-        console.log(color.green(`HTTP Web server started on port ${color.cyan("0.0.0.0")}:${color.cyan(80)}`));
-        console.log(color.blue("********************** Done ************************"));
-        console.log(color.green("HTTP Server is now ready to accept connections"));
-    });
-
-} catch(err){
-    Sentry.captureException(err);
 }
+
+init();
