@@ -61,6 +61,7 @@ async function init() {
 
 
         let apikey = (await account.getPrefs()).apikey ?? null;
+        let healthcheck_url = (await account.getPrefs()).healthcheck_url ?? null;
         
         if(!functions.envIsEmpty('SENTRY_DSN')) {
             Sentry.init({
@@ -69,12 +70,18 @@ async function init() {
             });
         }
         
-        if(!functions.envIsEmpty('HEALTHCHECK_URL')){
+
+
+        if(healthcheck_url){
+
+            console.log(color.yellow(`** Healthcheck configured, preparing Heartbeat. **`));
             setInterval(function() {
-                console.log("Pinging " + process.env.HEALTHCHECK_URL);
-                axios.get(process.env.HEALTHCHECK_URL);
-                console.log("Done Pinging " + process.env.HEALTHCHECK_URL);
+                console.log("** Pinging " + healthcheck_url + " **");
+                axios.get(healthcheck_url);
+                console.log("** Done Pinging " + healthcheck_url + " **");
             }, 59000);
+        }else{
+            console.log(color.yellow(`** Healthcheck not configured **`));
         }
         
         try {
